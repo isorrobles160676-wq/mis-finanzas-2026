@@ -14,6 +14,7 @@
         .total-anual-linea { margin-top: 20px; padding: 15px; background: #1e293b; color: white; border-radius: 8px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; font-size: 15px; }
         .ahorro-badg { background: #059669; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
         @media (max-width: 768px) { .grid-categorias { grid-template-columns: repeat(2, 1fr); } li { flex-wrap: wrap; } li input[type="date"] { width: 100% !important; margin-bottom: 5px; } }
+        @media print { .controls, button, .tab, #bloqueo, hr { display: none !important; } .app { box-shadow: none; border: none; } body { background: white; } }
     </style>
 </head>
 <body>
@@ -47,21 +48,30 @@
             <button onclick="renderTodo()">Actualizar Vista</button>
             <button onclick="window.print()" style="background:#4b5563">🖨️ Imprimir</button>
         </div>
-        <div class="resumen" id="resumenGeneralMensual">Cargando datos...</div>
+        <div class="resumen" id="resumenGeneralMensual"></div>
         <ul id="lista"></ul>
     </div>
 
     <div id="anual" class="tab-content">
+        <div class="controls">
+            <select id="anioAnual"></select>
+            <button onclick="renderAnual()">Actualizar Año</button>
+        </div>
         <div id="resumenAnual" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:15px;"></div>
+        <div id="totalesAnioCompleto" class="total-anual-linea"></div>
     </div>
 
     <div id="anualCat" class="tab-content">
+        <div class="controls">
+            <select id="anioAnualCat"></select>
+            <button onclick="renderAnualCategorias()">Gastos por Categoría</button>
+        </div>
         <div class="grid-categorias" id="resumenAnualCategorias"></div>
     </div>
 </div>
 
 <script>
-    // CONFIGURACIÓN FIREBASE
+    // CONFIGURACIÓN FIREBASE (Tus llaves)
     const firebaseConfig = {
       apiKey: "AIzaSyAyQyujnDey4pyWz23UtircxKLkqlVr8Ic",
       authDomain: "finanzasfamilia-defac.firebaseapp.com",
@@ -79,7 +89,7 @@
     var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     var categorias = ["Amazon","Cochera","Comida","Dulces","Infancia","Nomina","Subsidio","Compras Navas","Corte Ingles","Clases","Gasolina","Luz","Gas","Impuestos","Letra","Ocio","Mercadona","Seguros","Telefono","Vivienda","Otros","Guillermo","Celia","Ismael","Cayetano","Renfe","ITV","Perro","Electrodomesticos","Basuras","Farmacia","Coche"];
 
-    // Cargar datos de Firebase
+    // Cargar datos de Firebase en tiempo real
     db.ref('finanzas').on('value', (snapshot) => {
         const data = snapshot.val();
         datos = data ? Object.keys(data).map(key => ({...data[key], id: key})) : [];
@@ -90,25 +100,39 @@
     var catSel = document.getElementById('categoria');
     categorias.forEach(c => catSel.innerHTML += `<option>${c}</option>`);
     
-    var mesSel = document.getElementById('mes');
-    meses.forEach((m, i) => {
-        var selected = (i === new Date().getMonth()) ? 'selected' : '';
-        mesSel.innerHTML += `<option value="${i}" ${selected}>${m}</option>`;
+    var hoy = new Date();
+    document.getElementById('fecha').value = hoy.toISOString().split('T')[0];
+
+    // Llenar años y meses
+    ['anio', 'anioAnual', 'anioAnualCat'].forEach(id => {
+        var el = document.getElementById(id);
+        for(var a=2024; a<=2035; a++) {
+            var selected = (a === hoy.getFullYear()) ? 'selected' : '';
+            el.innerHTML += `<option ${selected}>${a}</option>`;
+        }
     });
 
-    var anioSel = document.getElementById('anio');
-    for(var a=2024; a<=2035; a++) {
-        var selected = (a === new Date().getFullYear()) ? 'selected' : '';
-        anioSel.innerHTML += `<option ${selected}>${a}</option>`;
-    }
-
-    document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+    var mesSel = document.getElementById('mes');
+    meses.forEach((m, i) => {
+        var selected = (i === hoy.getMonth()) ? 'selected' : '';
+        mesSel.innerHTML += `<option value="${i}" ${selected}>${m}</option>`;
+    });
 
     function verificarPIN() {
         if(document.getElementById('pinInput').value === "329202") {
             document.getElementById('bloqueo').style.display = 'none';
             document.getElementById('contenidoApp').style.display = 'block';
+            renderTodo();
         } else { alert("PIN Incorrecto"); }
+    }
+
+    function mostrarTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tab).classList.add('active');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        if(tab === 'anual') renderAnual();
+        if(tab === 'anualCat') renderAnualCategorias();
     }
 
     function agregar() {
@@ -158,19 +182,25 @@
                     ${categorias.map(c => `<option ${c===d.categoria?'selected':''}>${c}</option>`).join('')}
                 </select>
                 <input type="number" step="0.01" value="${d.monto.toFixed(2)}" onchange="editarDato('${d.id}', 'monto', this.value)" style="width:75px; text-align:right">
+                <span class="${d.tipo}" style="padding:0 5px">€</span>
                 <button onclick="eliminar('${d.id}')" style="background:#ef4444; padding:5px 10px">X</button>
             `;
             listaUI.appendChild(li);
         });
 
         var p = tI ? (tG/tI*100).toFixed(1) : 0;
-        document.getElementById('resumenGeneralMensual').innerHTML = `<b>I:</b> <span class="ingreso">${tI.toFixed(2)}€</span> | <b>G:</b> <span class="gasto">${tG.toFixed(2)}€</span> | <b>B:</b> ${(tI-tG).toFixed(2)}€ <div class="barra"><div class="barra-interna" style="width:${p > 100 ? 100 : p}%; background:#ef4444"></div></div>`;
+        document.getElementById('resumenGeneralMensual').innerHTML = 
+            '<b>I:</b> <span class="ingreso">' + tI.toFixed(2) + '€</span> | ' +
+            '<b>G:</b> <span class="gasto">' + tG.toFixed(2) + '€</span> | <b>B:</b> ' + (tI-tG).toFixed(2) + '€' +
+            '<div class="barra"><div class="barra-interna" style="width:' + (p > 100 ? 100 : p) + '%; background:#ef4444"></div></div>';
     }
 
     function renderAnual() {
-        var aSel = parseInt(document.getElementById('anio').value);
+        var aSel = parseInt(document.getElementById('anioAnual').value);
         var contenedor = document.getElementById('resumenAnual');
         contenedor.innerHTML = '';
+        var tAI = 0, tAG = 0;
+
         meses.forEach((mNom, i) => {
             let ing = 0, gas = 0;
             datos.forEach(d => {
@@ -179,27 +209,51 @@
                     if(d.tipo === 'ingreso') ing += d.monto; else gas += d.monto;
                 }
             });
+            tAI += ing; tAG += gas;
             var porc = ing ? (gas / ing * 100).toFixed(0) : 0;
-            contenedor.innerHTML += `<div class="mes-card"><b style="color:#2563eb">${mNom}</b><div class="barra"><div class="barra-interna" style="width:${porc > 100 ? 100 : porc}%; background:orange;"></div></div><div style="font-size:12px">I: ${ing.toFixed(0)}€ | G: ${gas.toFixed(0)}€</div></div>`;
+            var mesCard = document.createElement('div');
+            mesCard.className = 'mes-card';
+            mesCard.innerHTML = `
+                <b style="color:#2563eb">${mNom}</b>
+                <div class="barra"><div class="barra-interna" style="width:${porc > 100 ? 100 : porc}%; background:orange;"></div></div>
+                <div style="font-size:12px; text-align:left;">
+                    <div class="ingreso">Ingresos: ${ing.toFixed(0)}€</div>
+                    <div class="gasto">Gastos: ${gas.toFixed(0)}€</div>
+                    <div style="margin-top:4px; border-top:1px solid #eee; padding-top:2px; font-weight:bold; color:#1e293b">Bal: ${(ing-gas).toFixed(0)}€</div>
+                </div>`;
+            contenedor.appendChild(mesCard);
         });
+
+        var ahorro = tAI ? (((tAI - tAG) / tAI) * 100).toFixed(1) : 0;
+        document.getElementById('totalesAnioCompleto').innerHTML = `
+            <span>TOTAL ${aSel}</span>
+            <span class="ingreso" style="color:#4ade80">INGRESOS: ${tAI.toFixed(2)}€</span>
+            <span class="gasto" style="color:#f87171">GASTOS: ${tAG.toFixed(2)}€</span>
+            <span>BALANCE: ${(tAI-tAG).toFixed(2)}€ <span class="ahorro-badg">${ahorro}% ahorro</span></span>
+        `;
     }
 
     function renderAnualCategorias() {
+        var a = parseInt(document.getElementById('anioAnualCat').value);
         var res = {}, tI = 0;
-        datos.forEach(d => { if(d.tipo==='ingreso') tI += d.monto; else res[d.categoria] = (res[d.categoria] || 0) + d.monto; });
+        datos.forEach(d => {
+            var f = new Date(d.fecha);
+            if(f.getFullYear() === a) {
+                if(d.tipo==='ingreso') tI += d.monto;
+                else res[d.categoria] = (res[d.categoria] || 0) + d.monto;
+            }
+        });
         var html = '';
-        Object.keys(res).sort((a,b)=>res[b]-res[a]).forEach(c => {
+        var colores = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#f43f5e", "#14b8a6", "#6366f1"];
+        Object.keys(res).sort((a,b)=>res[b]-res[a]).forEach((c, i) => {
             var v = res[c]; var p = tI ? (v/tI*100).toFixed(1) : 0;
-            html += `<div style="background:#fff; padding:8px; border:1px solid #ddd; border-radius:6px; font-size:11px;"><b>${c}</b><br>${v.toFixed(2)}€ (${p}%)</div>`;
+            var color = colores[i % colores.length];
+            html += `<div style="background:#fff; padding:8px; border-radius:6px; border:1px solid #e2e8f0; font-size:12px;">
+                        <b>${c}</b><br>${v.toFixed(2)}€ (${p}%)
+                        <div class="barra"><div class="barra-interna" style="width:${p > 100 ? 100 : p}%; background:${color}"></div></div>
+                    </div>`;
         });
         document.getElementById('resumenAnualCategorias').innerHTML = html;
-    }
-
-    function mostrarTab(tab) {
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.getElementById(tab).classList.add('active');
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
     }
 </script>
 </body>
