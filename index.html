@@ -74,7 +74,7 @@
 </div>
 
 <script>
-    // CREDENCIALES DE TU FIREBASE
+    // CONFIGURACIÓN FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyAyQyujnDey4pyWz23UtircxKLkqlVr8Ic",
       authDomain: "finanzasfamilia-defac.firebaseapp.com",
@@ -92,14 +92,13 @@
     var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     var categorias = ["Amazon","Cochera","Comida","Dulces","Infancia","Nomina","Subsidio","Compras Navas","Corte Ingles","Clases","Gasolina","Luz","Gas","Impuestos","Letra","Ocio","Mercadona","Seguros","Telefono","Vivienda","Otros","Guillermo","Celia","Ismael","Cayetano","Renfe","ITV","Perro","Electrodomesticos","Basuras","Farmacia","Coche"];
 
-    // Sincronización en tiempo real con Firebase
+    // Cargar desde Firebase
     db.ref('finanzas').on('value', (snapshot) => {
         const data = snapshot.val();
         datos = data ? Object.keys(data).map(key => ({...data[key], id: key})) : [];
         renderTodo();
     });
 
-    // Inicializar selectores y fecha
     var hoy = new Date();
     document.getElementById('fecha').value = hoy.toISOString().split('T')[0];
     var catSel = document.getElementById('categoria');
@@ -107,15 +106,11 @@
 
     ['anio', 'anioAnual', 'anioAnualCat'].forEach(id => {
         var el = document.getElementById(id);
-        for(var a=2024; a<=2035; a++) {
-            el.innerHTML += `<option ${a === hoy.getFullYear() ? 'selected' : ''}>${a}</option>`;
-        }
+        for(var a=2024; a<=2035; a++) { el.innerHTML += `<option ${a===hoy.getFullYear()?'selected':''}>${a}</option>`; }
     });
 
     var mesSel = document.getElementById('mes');
-    meses.forEach((m, i) => {
-        mesSel.innerHTML += `<option value="${i}" ${i === hoy.getMonth() ? 'selected' : ''}>${m}</option>`;
-    });
+    meses.forEach((m, i) => { mesSel.innerHTML += `<option value="${i}" ${i===hoy.getMonth()?'selected':''}>${m}</option>`; });
 
     function verificarPIN() {
         if(document.getElementById('pinInput').value === "329202") {
@@ -130,6 +125,8 @@
         document.getElementById(tab).classList.add('active');
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
+        if(tab === 'anual') renderAnual();
+        if(tab === 'anualCat') renderAnualCategorias();
     }
 
     function agregar() {
@@ -143,7 +140,7 @@
     }
 
     function eliminar(id) {
-        if(confirm("¿Borrar registro?")) { db.ref('finanzas/' + id).remove(); }
+        if(confirm("¿Borrar?")) { db.ref('finanzas/' + id).remove(); }
     }
 
     function editarDato(id, campo, valor) {
@@ -197,7 +194,7 @@
             });
             tAI += ing; tAG += gas;
             var porc = ing ? (gas / ing * 100).toFixed(0) : 0;
-            contenedor.innerHTML += `<div class="mes-card"><b style="color:#2563eb">${mNom}</b><div class="barra"><div class="barra-interna" style="width:${porc > 100 ? 100 : porc}%; background:orange;"></div></div><div style="font-size:12px; text-align:left;"><div class="ingreso">I: ${ing.toFixed(0)}€</div><div class="gasto">G: ${gas.toFixed(0)}€</div><div style="font-weight:bold; color:#1e293b">Bal: ${(ing-gas).toFixed(0)}€</div></div></div>`;
+            contenedor.innerHTML += `<div class="mes-card"><b style="color:#2563eb">${mNom}</b><div class="barra"><div class="barra-interna" style="width:${porc > 100 ? 100 : porc}%; background:orange;"></div></div><div style="font-size:12px">I: ${ing.toFixed(0)}€ | G: ${gas.toFixed(0)}€<br><b>Bal: ${(ing-gas).toFixed(0)}€</b></div></div>`;
         });
         var ahorro = tAI ? (((tAI - tAG) / tAI) * 100).toFixed(1) : 0;
         document.getElementById('totalesAnioCompleto').innerHTML = `<span>TOTAL ${aSel}</span> <span class="ingreso">ING: ${tAI.toFixed(2)}€</span> <span class="gasto">GAS: ${tAG.toFixed(2)}€</span> <span>BAL: ${(tAI-tAG).toFixed(2)}€ <span class="ahorro-badg">${ahorro}% ahorro</span></span>`;
@@ -218,15 +215,15 @@
 
     function exportarBackup() {
         var blob = new Blob([JSON.stringify(datos)], {type:'application/json'});
-        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup_finanzas_firebase.json'; a.click();
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup_finanzas.json'; a.click();
     }
 
     function importarLocal(e) {
         var reader = new FileReader();
         reader.onload = function(ev) {
-            var importados = JSON.parse(ev.target.result);
-            if(confirm("Se subirán " + importados.length + " registros a la nube. ¿Continuar?")) {
-                importados.forEach(d => db.ref('finanzas').push(d));
+            var imp = JSON.parse(ev.target.result);
+            if(confirm("¿Subir " + imp.length + " registros a Firebase?")) {
+                imp.forEach(d => db.ref('finanzas').push(d));
             }
         };
         reader.readAsText(e.target.files[0]);
