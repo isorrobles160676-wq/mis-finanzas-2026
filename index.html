@@ -3,17 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Finanzas Familiares Pro - 2026</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        body{font-family:Arial, sans-serif;background:#f4f6f8;padding:10px;margin:0}.app{max-width:1000px;margin:auto;background:#fff;padding:15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.1)}h1{text-align:center;font-size:18px}input,select,button{padding:8px;margin:4px 0;font-size:14px;border:1px solid #ccc;border-radius:6px}button{background:#2563eb;color:#fff;border:none;cursor:pointer;font-weight:bold}button:hover{background:#1e40af}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.resumen{background:#eef2ff;padding:12px;border-radius:8px;margin-top:10px;font-size:13px}ul{list-style:none;padding:0;margin-top:10px}li{display:flex;flex-wrap:nowrap;align-items:center;border-bottom:1px solid #ddd;padding:8px 0;gap:5px}.barra{height:12px;border-radius:6px;background:#ddd;margin:5px 0;overflow:hidden;position:relative}.barra-interna{height:100%;transition:width 0.5s}.ingreso{color:#059669;font-weight:bold}.gasto{color:#dc2626;font-weight:bold}.tab{cursor:pointer;padding:10px;border-radius:6px;background:#ccc;color:#000;margin-right:5px;display:inline-block;flex:1;text-align:center;font-size:13px}.tab.active{background:#2563eb;color:white}.tab-content{display:none;margin-top:10px}.tab-content.active{display:block}
+        body{font-family:Arial, sans-serif;background:#f4f6f8;padding:5px;margin:0;overflow-x:hidden}.app{max-width:1000px;margin:auto;background:#fff;padding:10px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.1)}h1{text-align:center;font-size:18px;margin:10px 0}input,select,button{padding:8px;margin:2px 0;font-size:14px;border:1px solid #ccc;border-radius:6px}button{background:#2563eb;color:#fff;border:none;cursor:pointer;font-weight:bold}button:hover{background:#1e40af}.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:5px}.resumen{background:#eef2ff;padding:10px;border-radius:8px;margin-top:10px;font-size:13px}ul{list-style:none;padding:0;margin-top:10px}li{display:flex;align-items:center;border-bottom:1px solid #ddd;padding:8px 0;gap:4px;width:100%}.barra{height:12px;border-radius:6px;background:#ddd;margin:5px 0;overflow:hidden;position:relative}.barra-interna{height:100%;transition:width 0.5s}.ingreso{color:#059669;font-weight:bold}.gasto{color:#dc2626;font-weight:bold}.tab{cursor:pointer;padding:8px;border-radius:6px;background:#ccc;color:#000;margin-right:2px;display:inline-block;flex:1;text-align:center;font-size:12px}.tab.active{background:#2563eb;color:white}.tab-content{display:none;margin-top:10px}.tab-content.active{display:block}
         #bloqueo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; }
-        .mes-card { background:#fff; padding:12px; border:1px solid #e5e7eb; border-radius:8px; text-align:center; box-shadow: 0 2px 4px rgba(0,0,0,0.05)}
-        .grid-categorias { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
-        .total-anual-linea { margin-top: 20px; padding: 15px; background: #1e293b; color: white; border-radius: 8px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; font-size: 15px; }
-        .ahorro-badg { background: #059669; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
-        @media (max-width: 768px) { .grid-categorias { grid-template-columns: repeat(2, 1fr); } li { flex-wrap: wrap; } li input[type="date"] { width: 100% !important; margin-bottom: 5px; } }
+        .mes-card { background:#fff; padding:10px; border:1px solid #e5e7eb; border-radius:8px; text-align:center; box-shadow: 0 2px 4px rgba(0,0,0,0.05)}
+        .grid-categorias { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 15px; }
+        .total-anual-linea { margin-top: 20px; padding: 15px; background: #1e293b; color: white; border-radius: 8px; display: flex; flex-direction: column; gap: 5px; font-size: 14px; text-align: center; }
+        .ahorro-badg { background: #059669; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; }
+        
+        /* AJUSTES ESPECÍFICOS PARA MÓVIL */
+        @media (max-width: 600px) {
+            .controls { grid-template-columns: 1fr 1fr; }
+            .controls button { grid-column: span 1; font-size: 12px; padding: 6px; }
+            li input[type="date"] { width: 90px !important; font-size: 11px; }
+            li select { flex: 1; font-size: 11px; min-width: 80px; }
+            li input[type="number"] { width: 60px !important; font-size: 11px; }
+            h1 { font-size: 16px; }
+            .resumen { font-size: 11px; }
+        }
         @media print { .controls, button, .tab, #bloqueo, hr { display: none !important; } .app { box-shadow: none; border: none; } body { background: white; } }
     </style>
 </head>
@@ -36,19 +46,19 @@
     <div id="mensual" class="tab-content active">
         <div class="controls">
             <input id="fecha" type="date">
-            <input id="monto" type="number" step="0.01" inputmode="decimal" placeholder="Importe €">
+            <input id="monto" type="number" step="0.01" inputmode="decimal" placeholder="€">
             <select id="categoria"></select>
             <select id="tipo"><option value="gasto">Gasto</option><option value="ingreso">Ingreso</option></select>
-            <button onclick="agregar()">+ Añadir</button>
+            <button onclick="agregar()" style="grid-column: span 2; background: #059669;">+ Añadir Registro</button>
         </div>
         <hr>
         <div class="controls">
             <select id="mes"></select>
             <select id="anio"></select>
-            <button onclick="renderTodo()">Actualizar Vista</button>
-            <button onclick="window.print()" style="background:#4b5563">🖨️ Imprimir</button>
-            <button onclick="exportarBackup()" style="background:#059669">💾 Backup</button>
-            <button onclick="document.getElementById('imp').click()" style="background:#d97706">📂 Importar</button>
+            <button onclick="renderTodo()">Actualizar</button>
+            <button onclick="window.print()" style="background:#4b5563">Imprimir</button>
+            <button onclick="exportarBackup()" style="background:#10b981">Backup</button>
+            <button onclick="document.getElementById('imp').click()" style="background:#d97706">Importar</button>
             <input type="file" id="imp" style="display:none" onchange="importarLocal(event)">
         </div>
         <div class="resumen" id="resumenGeneralMensual"></div>
@@ -58,7 +68,7 @@
     <div id="anual" class="tab-content">
         <div class="controls">
             <select id="anioAnual"></select>
-            <button onclick="renderAnual()">Actualizar Año</button>
+            <button onclick="renderAnual()">Ver Año</button>
         </div>
         <div id="resumenAnual" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:15px;"></div>
         <div id="totalesAnioCompleto" class="total-anual-linea"></div>
@@ -67,14 +77,13 @@
     <div id="anualCat" class="tab-content">
         <div class="controls">
             <select id="anioAnualCat"></select>
-            <button onclick="renderAnualCategorias()">Gastos por Categoría</button>
+            <button onclick="renderAnualCategorias()">Filtrar</button>
         </div>
         <div class="grid-categorias" id="resumenAnualCategorias"></div>
     </div>
 </div>
 
 <script>
-    // CONFIGURACIÓN FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyAyQyujnDey4pyWz23UtircxKLkqlVr8Ic",
       authDomain: "finanzasfamilia-defac.firebaseapp.com",
@@ -92,7 +101,6 @@
     var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     var categorias = ["Amazon","Cochera","Comida","Dulces","Infancia","Nomina","Subsidio","Compras Navas","Corte Ingles","Clases","Gasolina","Luz","Gas","Impuestos","Letra","Ocio","Mercadona","Seguros","Telefono","Vivienda","Otros","Guillermo","Celia","Ismael","Cayetano","Renfe","ITV","Perro","Electrodomesticos","Basuras","Farmacia","Coche"];
 
-    // Cargar desde Firebase
     db.ref('finanzas').on('value', (snapshot) => {
         const data = snapshot.val();
         datos = data ? Object.keys(data).map(key => ({...data[key], id: key})) : [];
@@ -125,8 +133,6 @@
         document.getElementById(tab).classList.add('active');
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
-        if(tab === 'anual') renderAnual();
-        if(tab === 'anualCat') renderAnualCategorias();
     }
 
     function agregar() {
@@ -134,13 +140,9 @@
         var mVal = parseFloat(document.getElementById('monto').value);
         var tVal = document.getElementById('tipo').value;
         var cVal = document.getElementById('categoria').value;
-        if(!fVal || isNaN(mVal)) return alert("Introduce fecha e importe");
+        if(!fVal || isNaN(mVal)) return alert("Error en datos");
         db.ref('finanzas').push({ fecha: fVal, monto: mVal, tipo: tVal, categoria: cVal });
         document.getElementById('monto').value = '';
-    }
-
-    function eliminar(id) {
-        if(confirm("¿Borrar?")) { db.ref('finanzas/' + id).remove(); }
     }
 
     function editarDato(id, campo, valor) {
@@ -165,13 +167,12 @@
             if(d.tipo === 'ingreso') tI += d.monto; else tG += d.monto;
             var li = document.createElement('li');
             li.innerHTML = `
-                <input type="date" value="${d.fecha}" onchange="editarDato('${d.id}', 'fecha', this.value)" style="width:115px">
-                <select onchange="editarDato('${d.id}', 'categoria', this.value)" style="flex-grow:1">
+                <input type="date" value="${d.fecha}" onchange="editarDato('${d.id}', 'fecha', this.value)">
+                <select onchange="editarDato('${d.id}', 'categoria', this.value)">
                     ${categorias.map(c => `<option ${c===d.categoria?'selected':''}>${c}</option>`).join('')}
                 </select>
-                <input type="number" step="0.01" value="${d.monto.toFixed(2)}" onchange="editarDato('${d.id}', 'monto', this.value)" style="width:75px; text-align:right">
-                <span class="${d.tipo}" style="padding:0 5px">€</span>
-                <button onclick="eliminar('${d.id}')" style="background:#ef4444; padding:5px 10px">X</button>
+                <input type="number" step="0.01" value="${d.monto.toFixed(2)}" onchange="editarDato('${d.id}', 'monto', this.value)">
+                <button onclick="eliminar('${d.id}')" style="background:#ef4444; padding:5px 8px">X</button>
             `;
             listaUI.appendChild(li);
         });
@@ -194,10 +195,10 @@
             });
             tAI += ing; tAG += gas;
             var porc = ing ? (gas / ing * 100).toFixed(0) : 0;
-            contenedor.innerHTML += `<div class="mes-card"><b style="color:#2563eb">${mNom}</b><div class="barra"><div class="barra-interna" style="width:${porc > 100 ? 100 : porc}%; background:orange;"></div></div><div style="font-size:12px">I: ${ing.toFixed(0)}€ | G: ${gas.toFixed(0)}€<br><b>Bal: ${(ing-gas).toFixed(0)}€</b></div></div>`;
+            contenedor.innerHTML += `<div class="mes-card"><b style="color:#2563eb">${mNom}</b><div class="barra"><div class="barra-interna" style="width:${porc > 100 ? 100 : porc}%; background:orange;"></div></div><div style="font-size:11px">I: ${ing.toFixed(0)}€ | G: ${gas.toFixed(0)}€<br><b>B: ${(ing-gas).toFixed(0)}€</b></div></div>`;
         });
         var ahorro = tAI ? (((tAI - tAG) / tAI) * 100).toFixed(1) : 0;
-        document.getElementById('totalesAnioCompleto').innerHTML = `<span>TOTAL ${aSel}</span> <span class="ingreso">ING: ${tAI.toFixed(2)}€</span> <span class="gasto">GAS: ${tAG.toFixed(2)}€</span> <span>BAL: ${(tAI-tAG).toFixed(2)}€ <span class="ahorro-badg">${ahorro}% ahorro</span></span>`;
+        document.getElementById('totalesAnioCompleto').innerHTML = `<div>TOTAL ${aSel}</div> <div><span class="ingreso">ING: ${tAI.toFixed(2)}€</span> | <span class="gasto">GAS: ${tAG.toFixed(2)}€</span></div> <div>BAL: ${(tAI-tAG).toFixed(2)}€ <span class="ahorro-badg">${ahorro}% ahorro</span></div>`;
     }
 
     function renderAnualCategorias() {
@@ -213,6 +214,10 @@
         document.getElementById('resumenAnualCategorias').innerHTML = html;
     }
 
+    function eliminar(id) {
+        if(confirm("¿Borrar?")) { db.ref('finanzas/' + id).remove(); }
+    }
+
     function exportarBackup() {
         var blob = new Blob([JSON.stringify(datos)], {type:'application/json'});
         var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup_finanzas.json'; a.click();
@@ -222,8 +227,8 @@
         var reader = new FileReader();
         reader.onload = function(ev) {
             var imp = JSON.parse(ev.target.result);
-            if(confirm("¿Subir " + imp.length + " registros a Firebase?")) {
-                imp.forEach(d => db.ref('finanzas').push(d));
+            if(confirm("Subir " + imp.length + " registros?")) {
+                imp.forEach(d => { delete d.id; db.ref('finanzas').push(d); });
             }
         };
         reader.readAsText(e.target.files[0]);
