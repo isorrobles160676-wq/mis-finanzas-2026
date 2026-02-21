@@ -37,9 +37,9 @@
 <div class="app" id="contenidoApp" style="display:none;">
     <h1>Mis Finanzas Familiares</h1>
     <div style="display:flex; margin-bottom:10px;">
-        <span class="tab active" onclick="mostrarTab('mensual')">Mes</span>
-        <span class="tab" onclick="mostrarTab('anual')">Año</span>
-        <span class="tab" onclick="mostrarTab('anualCat')">Categorías</span>
+        <span class="tab active" onclick="mostrarTab(event, 'mensual')">Mes</span>
+        <span class="tab" onclick="mostrarTab(event, 'anual')">Año</span>
+        <span class="tab" onclick="mostrarTab(event, 'anualCat')">Categorías</span>
     </div>
 
     <div id="mensual" class="tab-content active">
@@ -84,7 +84,7 @@
 
 <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyCOBgFM2KgWGTjar5tLUvQeuI2laYK26m4",
+      apiKey: "AIzaSyD8VGkV2ANk_KPF8_okRu4VK-IAodvB1SE",
       authDomain: "finanzasfamilia-defac.firebaseapp.com",
       databaseURL: "https://finanzasfamilia-defac-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "finanzasfamilia-defac",
@@ -127,9 +127,9 @@
         } else { alert("PIN Incorrecto"); }
     }
 
-    function mostrarTab(tab) {
+    function mostrarTab(event, tabId) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.getElementById(tab).classList.add('active');
+        document.getElementById(tabId).classList.add('active');
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         event.currentTarget.classList.add('active');
     }
